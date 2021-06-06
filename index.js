@@ -3,30 +3,35 @@ const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
 
 const url = 'mongodb://localhost:27017/conFusion';
-const connect = mongoose.connect(url);
-
-connect.then((db) => {
-
-    console.log('Connected correctly to server');
-
-    Dishes.create({
-        name: 'Uthappizza',
-        description: 'test'
-    })
-    .then((dish) => {
-        console.log(dish);
-
-        return Dishes.find({});
-    })
-    .then((dishes) => {
-        console.log(dishes);
-
-        return Dishes.remove({});
-    })
+mongoose.connect(url)
     .then(() => {
-        return mongoose.connection.close();
+        const db = mongoose.connection;
+
+        Dishes.create({
+            name: "Uthapizza",
+            description: "Test"
+        })
+        .then(dish => {
+            console.log(dish);
+
+            return Dishes.findByIdAndUpdate(
+                dish._id,
+                {
+                    $set: {
+                        description: "Updated Test"
+                    }
+                },
+                { new: true }
+            );
+        })
+        .then(dish => {
+            console.log(dish);
+            return db.collection("dishes").drop();
+        })
+        .then(() => {
+            return db.close();
+        });
     })
-    .catch((err) => {
-        console.log(err);
+    .catch(e => {
+        console.log(e);
     });
-});
